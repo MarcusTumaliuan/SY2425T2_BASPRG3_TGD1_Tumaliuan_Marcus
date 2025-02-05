@@ -2,33 +2,35 @@
 
 Player::~Player()
 {
+	// Memory manage our bullets. Delete all bullets on player deletion/death
 	for (int i = 0; i < bullets.size(); i++)
 	{
 		delete bullets[i];
 	}
+
 	bullets.clear();
 }
 
 void Player::start()
 {
-	//load texture
+	// Load Texture
 	texture = loadTexture("gfx/player.png");
 
-	// Initialize to avoid garbage value
-	x = 200;
-	y = 200;
+	// Initialize to avaoid garvage values
+	x = 0;
+	y = 0;
 	width = 0;
 	height = 0;
-	speed = 1;
+	speed = 5;
 
 	reloadTime = 8;
 	currentReloadTime = reloadTime;
 
-	//Query the texturte to set our width and height
+	// Query the texture to set our width and height
 	SDL_QueryTexture(texture, NULL, NULL, &width, &height);
 
-	//Initialize sound
-	sound = SoundManager::loadSound("sound/334227__jradcoolness__laser");
+	// Initialize sound
+	sound = SoundManager::loadSound("sound/334227__jradcoolness__laser.ogg");
 }
 
 void Player::update()
@@ -38,27 +40,19 @@ void Player::update()
 		currentReloadTime--;
 	}
 
-	if (app.keyboard[SDL_SCANCODE_F] && currentReloadTime <= 0)
+	if (app.keyboard[SDL_SCANCODE_F] &&
+		currentReloadTime <= 0)
 	{
-		Bullet* bullet = new Bullet(x + width - 2 , y + (height/2) - 5, 1, 0, 5);
-		getScene()->addGameObject(bullet);
-		bullet->start();
-		bullets.push_back(bullet);
-		SoundManager::playSound(sound);
-		currentReloadTime = reloadTime;
-	}
+		Bullet* bullet = new Bullet(x + width - 2,
+			y + (height / 2) - 5,
+			1, 0, 5);
 
-	if (app.keyboard[SDL_SCANCODE_G] && currentReloadTime <= 2)
-	{
-		Bullet* bulletI = new Bullet(x + width - 45, y + (height / 50) - 5, 1, 0, 5);
-		Bullet* bulletII = new Bullet(x + width - 45, y + (height / 1.1), 1, 0, 5);
-		getScene()->addGameObject(bulletI);
-		getScene()->addGameObject(bulletII);
-		bulletI->start();
-		bulletII->start();
-		bullets.push_back(bulletI);
-		bullets.push_back(bulletII);
+		getScene()->addGameObject(bullet);
+
+		bullets.push_back(bullet);
+
 		SoundManager::playSound(sound);
+
 		currentReloadTime = reloadTime;
 	}
 
@@ -66,14 +60,16 @@ void Player::update()
 	{
 		if (bullets[i]->getPositionX() > SCREEN_WIDTH)
 		{
-			//Cache the variable so we can delete it later
-			//We cant delete it after erasing it from the vector (leak pointer)
+			// Cache the variable so we can delete it later
+			// We can't delete it after erasing from the vector (leaked pointer)
 			Bullet* bulletToErase = bullets[i];
 			bullets.erase(bullets.begin() + i);
+
 			delete bulletToErase;
-			//We can't mutate(change) our vector while looping inside it
-			//this might crash thenext loop
-			//to counter that, we only delete one bullet per frame
+
+			// We can't mutate (change) our vector while looping inside it
+			// this might crash on the next loop iteration
+			// To counter that, we only delete one bullet per frame
 			break;
 		}
 	}
@@ -97,6 +93,20 @@ void Player::update()
 	{
 		x += speed;
 	}
+	if (app.keyboard[SDL_SCANCODE_G] && currentReloadTime <= 2)
+	{
+		Bullet* bulletI = new Bullet(x + width - 45, y + (height / 50) - 5, 1, 0, 5);
+		Bullet* bulletII = new Bullet(x + width - 45, y + (height / 1.1), 1, 0, 5);
+		getScene()->addGameObject(bulletI);
+		getScene()->addGameObject(bulletII);
+		bulletI->start();
+		bulletII->start();
+		bullets.push_back(bulletI);
+		bullets.push_back(bulletII);
+		SoundManager::playSound(sound);
+		currentReloadTime = reloadTime;
+	}
+
 	//More speed
 	if (app.keyboard[SDL_SCANCODE_LSHIFT])
 	{
@@ -112,4 +122,14 @@ void Player::update()
 void Player::draw()
 {
 	blit(texture, x, y);
+}
+
+int Player::GetPositionX()
+{
+	return x;
+}
+
+int Player::GetPositionY()
+{
+	return y;
 }
