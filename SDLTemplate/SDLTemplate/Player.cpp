@@ -26,36 +26,19 @@ void Player::start()
 	reloadTime = 8;
 	currentReloadTime = reloadTime;
 
+	isAlive = true;
+
 	// Query the texture to set our width and height
 	SDL_QueryTexture(texture, NULL, NULL, &width, &height);
 
 	// Initialize sound
 	sound = SoundManager::loadSound("sound/334227__jradcoolness__laser.ogg");
+	//0-128
+	sound->volume = 64;
 }
 
 void Player::update()
 {
-	if (currentReloadTime > 0)
-	{
-		currentReloadTime--;
-	}
-
-	if (app.keyboard[SDL_SCANCODE_F] &&
-		currentReloadTime <= 0)
-	{
-		Bullet* bullet = new Bullet(x + width - 2,
-			y + (height / 2) - 5,
-			1, 0, 5);
-
-		getScene()->addGameObject(bullet);
-
-		bullets.push_back(bullet);
-
-		SoundManager::playSound(sound);
-
-		currentReloadTime = reloadTime;
-	}
-
 	for (int i = 0; i < bullets.size(); i++)
 	{
 		if (bullets[i]->getPositionX() > SCREEN_WIDTH)
@@ -72,6 +55,29 @@ void Player::update()
 			// To counter that, we only delete one bullet per frame
 			break;
 		}
+	}
+
+	if (!isAlive) return;
+
+	if (currentReloadTime > 0)
+	{
+		currentReloadTime--;
+	}
+
+	if (app.keyboard[SDL_SCANCODE_F] &&
+		currentReloadTime <= 0)
+	{
+		Bullet* bullet = new Bullet(x + width - 2,
+			y + (height / 2) - 5,
+			1, 0, 5, Side::PLAYER_SIDE);
+
+		getScene()->addGameObject(bullet);
+
+		bullets.push_back(bullet);
+
+		SoundManager::playSound(sound);
+
+		currentReloadTime = reloadTime;
 	}
 
 	if (app.keyboard[SDL_SCANCODE_W])
@@ -93,10 +99,11 @@ void Player::update()
 	{
 		x += speed;
 	}
+
 	if (app.keyboard[SDL_SCANCODE_G] && currentReloadTime <= 2)
 	{
-		Bullet* bulletI = new Bullet(x + width - 45, y + (height / 50) - 5, 1, 0, 5);
-		Bullet* bulletII = new Bullet(x + width - 45, y + (height / 1.1), 1, 0, 5);
+		Bullet* bulletI = new Bullet(x + width - 45, y + (height / 50) - 5, 1, 0, 5, Side::PLAYER_SIDE);
+		Bullet* bulletII = new Bullet(x + width - 45, y + (height / 1.1), 1, 0, 5, Side::PLAYER_SIDE);
 		getScene()->addGameObject(bulletI);
 		getScene()->addGameObject(bulletII);
 		bulletI->start();
@@ -121,6 +128,7 @@ void Player::update()
 
 void Player::draw()
 {
+	if (!isAlive) return;
 	blit(texture, x, y);
 }
 
@@ -132,4 +140,24 @@ int Player::GetPositionX()
 int Player::GetPositionY()
 {
 	return y;
+}
+
+int Player::GetWidth()
+{
+	return width;
+}
+
+int Player::GetHeight()
+{
+	return height;
+}
+
+bool Player::IsAlive()
+{
+	return isAlive;
+}
+
+void Player::DoDeath()
+{
+	isAlive = false;
 }

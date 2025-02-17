@@ -2,7 +2,7 @@
 
 Enemy::Enemy()
 {
-	x = 1300;
+	x = 1000;
 	y = rand() % 400 + 200;
 }
 
@@ -33,12 +33,19 @@ void Enemy::start()
 
 	// Initialize sound
 	sound = SoundManager::loadSound("sound/334227__jradcoolness__laser.ogg");
+	//0-128
+	sound->volume = 64;
 }
 
 void Enemy::update()
 {
 	x += directionX * speed;
 	y += directionY * speed;
+
+	if (y + height > SCREEN_HEIGHT || y < 0)
+	{
+		directionY = -directionY;
+	}
 
 #pragma region Direction Change Logic
 	if (currentDirectionChangeTime > 0)
@@ -69,7 +76,7 @@ void Enemy::update()
 
 		Bullet* bullet = new Bullet(x,
 			y + (height / 2) - 5,
-			dx, dy, 5);
+			dx, dy, 5, Side::ENEMY_SIDE);
 
 		getScene()->addGameObject(bullet);
 
@@ -117,4 +124,14 @@ int Enemy::GetPositionX()
 int Enemy::GetPositionY()
 {
 	return y;
+}
+
+int Enemy::GetWidth()
+{
+	return width;
+}
+
+int Enemy::GetHeight()
+{
+	return height;
 }
