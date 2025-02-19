@@ -30,6 +30,7 @@ void GameScene::start()
 	points = 0;
 
 	sound = SoundManager::loadSound("sound/245372__quaker540__hq-explosion.ogg");
+	soundI = SoundManager::loadSound("sound/342749__rhodesmas__notification-01.ogg");
 	sound->volume = 14;
 	SDL_QueryTexture(bgTexture, NULL, NULL, &bgWidth, &bgHeight);
 
@@ -139,6 +140,21 @@ void GameScene::DoCollisionLogic()
 						{
 						delete explosion;
 						currentReloadTime = reloadTime;
+						}
+						random = 1 + (rand() % 100);
+						if (random <= 40)
+						{
+							Powerup* powerup = new Powerup(currentEnemy->GetPositionX(), currentEnemy->GetPositionY(), 0, 1, 5);
+							this->addGameObject(powerup);
+							int collisionI = checkCollision(
+								player->GetPositionX(), player->GetPositionY(), player->GetWidth(), player->GetHeight(),
+								powerup->getPositionX(), powerup->getPositionY(), powerup->getWidth(), powerup->getHeight());
+							if (collisionI == 1)
+							{
+								points++;
+								SoundManager::playSound(soundI);
+								delete powerup;
+							}
 						}
 						break;
 					}

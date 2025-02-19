@@ -2,8 +2,8 @@
 
 Enemy::Enemy()
 {
-	x = 1000;
-	y = rand() % 400 + 200;
+	x = rand() % 400 + 200;
+	y = 1;
 }
 
 Enemy::~Enemy()
@@ -75,7 +75,7 @@ void Enemy::update()
 			&dx, &dy);
 
 		Bullet* bullet = new Bullet(x,
-			y + (height / 2) - 5,
+			y,
 			dx, dy, 5, Side::ENEMY_SIDE);
 
 		getScene()->addGameObject(bullet);

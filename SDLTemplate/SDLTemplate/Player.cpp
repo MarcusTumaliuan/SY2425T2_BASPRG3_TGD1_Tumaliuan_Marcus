@@ -1,5 +1,11 @@
 #include "Player.h"
 
+Player::Player()
+{
+	x = 360;
+	y = 1200;
+}
+
 Player::~Player()
 {
 	// Memory manage our bullets. Delete all bullets on player deletion/death
@@ -67,9 +73,9 @@ void Player::update()
 	if (app.keyboard[SDL_SCANCODE_F] &&
 		currentReloadTime <= 0)
 	{
-		Bullet* bullet = new Bullet(x + width - 2,
-			y + (height / 2) - 5,
-			1, 0, 5, Side::PLAYER_SIDE);
+		Bullet* bullet = new Bullet(x + width - 28,
+			y + (height * -0.4) - 5,
+			0, -1, 5, Side::PLAYER_SIDE);
 
 		getScene()->addGameObject(bullet);
 
@@ -102,8 +108,8 @@ void Player::update()
 
 	if (app.keyboard[SDL_SCANCODE_G] && currentReloadTime <= 2)
 	{
-		Bullet* bulletI = new Bullet(x + width - 45, y + (height / 50) - 5, 1, 0, 5, Side::PLAYER_SIDE);
-		Bullet* bulletII = new Bullet(x + width - 45, y + (height / 1.1), 1, 0, 5, Side::PLAYER_SIDE);
+		Bullet* bulletI = new Bullet(x + width - 7, y + (height / 2) - 5, 0, -1, 5, Side::PLAYER_SIDE);
+		Bullet* bulletII = new Bullet(x + width - 50, y + (height / 2), 0, -1, 5, Side::PLAYER_SIDE);
 		getScene()->addGameObject(bulletI);
 		getScene()->addGameObject(bulletII);
 		bulletI->start();

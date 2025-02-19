@@ -10,6 +10,7 @@
 class Player : public GameObject
 {
 public:
+	Player();
 	~Player();
 	void start();
 	void update();

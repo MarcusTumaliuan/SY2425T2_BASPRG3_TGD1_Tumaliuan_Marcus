@@ -6,6 +6,7 @@
 #include <vector>
 #include "text.h"
 #include "Explosion.h"
+#include "Powerup.h"
 
 class GameScene : public Scene
 {
@@ -38,7 +39,10 @@ private:
 	int bgWidth;
 	int bgHeight;
 
+	int random;
+
 	Mix_Chunk* sound;
+	Mix_Chunk* soundI;
 	SDL_Texture* bgTexture;
 	std::vector<Enemy*> spawnedEnemies;
 };
