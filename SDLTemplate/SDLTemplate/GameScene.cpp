@@ -1,201 +1,70 @@
 #include "GameScene.h"
+#include "Snake.h"
 
 GameScene::GameScene()
 {
 	// Register and add game objects on constructor
-	player = new Player();
-	this->addGameObject(player);
 }
 
 GameScene::~GameScene()
 {
-	delete player;
+
 }
 
 void GameScene::start()
 {
 	Scene::start();
-
-	bgTexture = loadTexture("gfx/background.png");
-
-	spawnTime = 300;
-	currentSpawnTime = spawnTime;
-
-	for (int i = 0; i < 3; i++)
-	{
-		Spawn();
-	}
-
-	initFonts();
-	points = 0;
-
-	sound = SoundManager::loadSound("sound/245372__quaker540__hq-explosion.ogg");
-	soundI = SoundManager::loadSound("sound/342749__rhodesmas__notification-01.ogg");
-	sound->volume = 14;
-	SDL_QueryTexture(bgTexture, NULL, NULL, &bgWidth, &bgHeight);
-
-	reloadTime = 3;
-	reloadTime = currentReloadTime;
+	Snake snake(5, 5); // Starting position of the snake
 }
 
 void GameScene::draw()
 {
-	blitScale(bgTexture, bgx, bgy, &bgWidth, &bgHeight, 3);
-
 	Scene::draw();
-
-	drawText(110, 20, 255, 255, 255, TEXT_CENTER, "POINTS: %03d", points);
-
-	if (!player->IsAlive())
-	{
-		drawText(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 255, 255, 255, TEXT_CENTER, "GAME OVER!");
-	}
 }
 
 void GameScene::update()
 {
 	Scene::update();
+	SDL_Point food = { rand() % 20, rand() % 20 }; // Random food position
 
-	DoSpawningLogic();
-	DoCollisionLogic();
+    while (running) {
+        // Handle input
+        // Update snake direction based on input
+
+        snake.move(dx, dy); // Move the snake
+
+        // Check for collision with food
+        if (snake.checkCollision(food.x, food.y)) {
+            snake.grow(); // Grow the snake
+            food.x = rand() % 20; // Respawn food
+            food.y = rand() % 20;
+        }
+
+        // Render the snake and food
+        snake.render(renderer);
+        SDL_Rect foodRect = { food.x * 10, food.y * 10, 10, 10 };
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for food
+        SDL_RenderFillRect(renderer, &foodRect);
+    }
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = false;
+        }
+        if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+            case SDLK_UP:
+                // Set direction to up
+                break;
+            case SDLK_DOWN:
+                // Set direction to down
+                break;
+            case SDLK_LEFT:
+                // Set direction to left
+                break;
+            case SDLK_RIGHT:
+                // Set direction to right
+                break;
+            }
+        }
+    }
 }
-
-void GameScene::Spawn()
-{
-	enemy = new Enemy();
-	this->addGameObject(enemy);
-	enemy->SetPlayerTarget(player);
-
-	spawnedEnemies.push_back(enemy);
-}
-
-void GameScene::DespawnEnemy(Enemy* enemy)
-{
-	int index = -1;
-	for (int i = 0; i < spawnedEnemies.size(); i++)
-	{
-		if (enemy == spawnedEnemies[i])
-		{
-			index = i;
-			break;
-		}
-	}
-
-	if (index != -1)
-	{
-		Enemy* enemy = spawnedEnemies[index];
-		spawnedEnemies.erase(spawnedEnemies.begin() + index);
-		delete enemy;
-	}
-}
-
-void GameScene::DoCollisionLogic()
-{
-	// Check for collision
-	for (int i = 0; i < objects.size(); i++)
-	{
-		Bullet* bullet = dynamic_cast<Bullet*>(objects[i]);
-
-		if (bullet != NULL)
-		{
-			// If the bullet is from the enemy side, check againts player
-			if (bullet->getSide() == Side::ENEMY_SIDE)
-			{
-				int collision = checkCollision(
-					player->GetPositionX(), player->GetPositionY(), player->GetWidth(), player->GetHeight(),
-					bullet->getPositionX(), bullet->getPositionY(), bullet->getWidth(), bullet->getHeight());
-
-				if (collision == 1)
-				{
-					//std::cout << "Player Has Been Hit!" << std::endl;
-					player->DoDeath();
-					break;
-				}
-			}
-
-			// If the bullet is from the player side, check againts ememy
-			else if (bullet->getSide() == Side::PLAYER_SIDE)
-			{
-				for (int i = 0; i < spawnedEnemies.size(); i++)
-				{
-					Enemy* currentEnemy = spawnedEnemies[i];
-
-					int collision = checkCollision(
-						currentEnemy->GetPositionX(), currentEnemy->GetPositionY(), currentEnemy->GetWidth(), currentEnemy->GetHeight(),
-						bullet->getPositionX(), bullet->getPositionY(), bullet->getWidth(), bullet->getHeight());
-
-					if (collision == 1)
-					{
-						Explosion* explosion = new Explosion(currentEnemy->GetPositionX(), currentEnemy->GetPositionY());
-						this->addGameObject(explosion);
-						//std::cout << "Enemy Has Been Hit!" << std::endl;
-						DespawnEnemy(currentEnemy);
-						points++;
-						SoundManager::playSound(sound);
-						if (currentReloadTime > 0)
-						{
-							currentReloadTime--;
-						}
-						if (currentReloadTime <= 0)
-						{
-						delete explosion;
-						currentReloadTime = reloadTime;
-						}
-						random = 1 + (rand() % 100);
-						if (random <= 40)
-						{
-							Powerup* powerup = new Powerup(currentEnemy->GetPositionX(), currentEnemy->GetPositionY(), 0, 1, 5);
-							this->addGameObject(powerup);
-							int collisionI = checkCollision(
-								player->GetPositionX(), player->GetPositionY(), player->GetWidth(), player->GetHeight(),
-								powerup->getPositionX(), powerup->getPositionY(), powerup->getWidth(), powerup->getHeight());
-							if (collisionI == 1)
-							{
-								points++;
-								SoundManager::playSound(soundI);
-								delete powerup;
-							}
-						}
-						break;
-					}
-				}
-			}
-		}
-	}
-}
-
-void GameScene::DoSpawningLogic()
-{
-	if (currentSpawnTime > 0)
-	{
-		currentSpawnTime--;
-	}
-
-	if (currentSpawnTime <= 0)
-	{
-		Spawn();
-
-		currentSpawnTime = spawnTime;
-	}
-
-	for (int i = 0; i < spawnedEnemies.size(); i++)
-	{
-		if (spawnedEnemies[i]->GetPositionX() < 0)
-		{
-			// Cache the variable so we can delete it later
-			// We can't delete it after erasing from the vector (leaked pointer)
-			Enemy* enemyToErase = spawnedEnemies[i];
-			spawnedEnemies.erase(spawnedEnemies.begin() + i);
-
-			delete enemyToErase;
-
-			// We can't mutate (change) our vector while looping inside it
-			// this might crash on the next loop iteration
-			// To counter that, we only delete one bullet per frame
-			break;
-
-		}
-	}
-}
-
-
